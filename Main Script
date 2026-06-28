@@ -1,11 +1,11 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "ZENHUB | TLK PRISON [V2.3]",
+   Name = "ZENHUB | TLK PRISON | V2.5",
    LoadingTitle = "Loading......",
    LoadingSubtitle = "by Zeutronxsite",
    ShowText = "RAYFIELD", -- for mobile users to unhide Rayfield, change if you'd like
-   Theme = "AmberGlow",
+   Theme = "Ocean",
 
 -- Toggle HIde UI in PC
    ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
@@ -16,7 +16,7 @@ local Window = Rayfield:CreateWindow({
    ConfigurationSaving = {
       Enabled = false,
       FolderName = nil, -- Create a custom folder for your hub/game
-      FileName = "Zen Site v1.2"
+      FileName = "Zenhubxsite File"
    },
 })
 
@@ -38,11 +38,11 @@ Rayfield:Notify({
 
 -- Name Scripts/Local Script
 local Change = Window:CreateTab("📰 Changelog", nil)
-local MainTab = Window:CreateTab("🏡 Main", nil)
+local MainTab = Window:CreateTab("⚔️ Attack", nil)
 local Buff = Window:CreateTab("🔄️ Buffer", nil)
 local Bypass = Window:CreateTab("🛡️ Anti Cheat Bypass", nil)
 local Team = Window:CreateTab("🚹 Team & Esp", nil)
-local Other = Window:CreateTab("🔧 Other Scripts", nil)
+local Other = Window:CreateTab("🔧 Scripts", nil)
 local Misc = Window:CreateTab("🔥 Misc", nil)
 
 -- ==========================================
@@ -59,247 +59,231 @@ local Paragraph = Change:CreateParagraph({Title = "✅ VERSION 1.9", Content = "
 
 local Paragraph = Change:CreateParagraph({Title = "✅ VERSION 2.3 (Latest Update)", Content = "- [+] Fixed WalkSpeed Bug\n- [+] Add 🔧 Other Scripts\n- [+] Add Script Tools\n- [!!] Fixed Auto Attack & Auto Heal\n- [+] Add Esp Other\n- [+] More Details & Information\n- [+] Change Toggle >> Button\n- [+] Add 🔥 Misc"})
 
+local Paragraph = Change:CreateParagraph({Title = "✅ VERSION 2.5", Content = "- [+] Remake Auto Attack\n- [+] Add One Hit\n- [!!] Fixed Auto Heal\n- [+] More Details & Information"})
+
 local MainSection = MainTab:CreateSection("Main Script Toggle")
-local Paragraph = MainTab:CreateParagraph({Title = "📢 INFORMATION", Content = "Auto Attack & Auto Heal Not tested yet, therefore there may be bugs"})
+local Paragraph = MainTab:CreateParagraph({Title = "📢 INFORMATION", Content = "Auto Heal Not tested yet, Working But With Issue"})
 
 -- ==========================================
 -- LOCAL SCRIPTS & SERVICE
 -- ==========================================
-
+-- Script Auto Attack
 local Plr = game:GetService("Players").LocalPlayer
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local WeaponsName = {
-    "Axe", "Pickaxe", "Fist", "Bat", "Knife", "Hammer", 
-    "Bag", "Pliers", "Handsaw", "Screwdriver", "Crowbar", "PoliceBaton"
-}
 
 workspace.FallenPartsDestroyHeight = -50000
 
--- Functions (dari Red GUI)
-local function Teleport(CFrameVal)
-    if Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart") then
-        Plr.Character.HumanoidRootPart.CFrame = CFrameVal
-    end
-end
-
-local function FireClick(Part)
-    if Part and Part:FindFirstChildOfClass("ClickDetector") then
-        fireclickdetector(Part:FindFirstChildOfClass("ClickDetector"))
-    end
-end
-
-local function Equip(Name)
-    if typeof(Name) == "string" then
-        if Plr.Backpack:FindFirstChild(Name) then
-            Plr.Backpack:FindFirstChild(Name).Parent = Plr.Character
-        end
-    elseif typeof(Name) == "Instance" and Name:IsA("Tool") then
-        Name.Parent = Plr.Character
-    end
-end
-
-local function Dupe(ToolName, ClickPart)
-    for _, tool in next, Plr.Backpack:GetChildren() do
-        if tool.Name == ToolName then
-            Equip(tool)
-        end
-    end
-    FireClick(ClickPart)
-end
-
-local function GetPlayersTeam()
-    local TeamCheckedPlayers = {}
-    for _, plr in pairs(game.Players:GetPlayers()) do
-        if plr ~= Plr and plr.Team ~= Plr.Team then
-            table.insert(TeamCheckedPlayers, plr)
-        end
-    end
-    return TeamCheckedPlayers
-end
-
-local function GetUnBlockingPlayers(Check, Pos)
-    local players = Check and GetPlayersTeam() or game.Players:GetPlayers()
-    local LocalCharacter = Plr.Character
-    local Players = {}
-    for _, plr in pairs(players) do
-        if plr ~= Plr and plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") and plr.Character:FindFirstChildOfClass("Humanoid").Health ~= 0 then
-            local Ray = Ray.new(Pos, (plr.Character.PrimaryPart.Position - Pos))
-            local part = workspace:FindPartOnRayWithIgnoreList(Ray, {LocalCharacter})
-            if part and part:IsDescendantOf(plr.Character) then
-                table.insert(Players, plr)
-            end
-        end
-    end
-    return Players
-end
-
-local function getPlayer(String, Information)
-    local Info = {
-        ["Raycasting"] = false,
-        ["Team"] = false,
-        ["Position"] = Plr.Character.PrimaryPart.Position,
-        ["Distance"] = math.huge
-    }
-    if Information then
-        for name, value in pairs(Information) do
-            if Info[name] ~= nil then Info[name] = value end
-        end
-    end
-
-    local players
-    if Info["Raycasting"] and Info["Team"] then
-        players = GetUnBlockingPlayers(true, Info["Position"])
-    elseif Info["Raycasting"] and not Info["Team"] then
-        players = GetUnBlockingPlayers(false, Info["Position"])
-    elseif Info["Team"] and not Info["Raycasting"] then
-        players = GetPlayersTeam()
-    else
-        players = game.Players:GetPlayers()
-    end
-
-    local Found = {}
-    local strl = String:lower()
-    if strl == "all" then
-        for i,v in pairs(players) do pcall(function()
-            if (Plr.Character.PrimaryPart.Position - v.Character.PrimaryPart.Position).magnitude <= Info["Distance"] then table.insert(Found, v) end
-        end) end
-    elseif strl == "others" then
-        for i,v in pairs(players) do pcall(function()
-            if v ~= Plr and (Plr.Character.PrimaryPart.Position - v.Character.PrimaryPart.Position).magnitude <= Info["Distance"] then table.insert(Found, v) end
-        end) end
-    elseif strl == "nearest" then
-        local closestPlayer, closestDistance
-        for _, p in pairs(players) do
-            if p ~= Plr and p.Character and p.Character:FindFirstChildOfClass("Humanoid") and p.Character:FindFirstChildOfClass("Humanoid").Health ~= 0 then
-                local distance = (Plr.Character.PrimaryPart.Position - p.Character.PrimaryPart.Position).Magnitude
-                if not closestDistance or distance < closestDistance then
-                    closestDistance = distance
-                    closestPlayer = p
-                end
-            end
-        end
-        if closestPlayer then table.insert(Found, closestPlayer) end
-    end
-    return Found
-end
+-- Daftar item yang diabaikan (Bukan senjata / Tool pendukung)
+local IgnoredItems = {
+    -- Makanan & Minuman
+    ["Drink"] = true, 
+    ["Doughnut"] = true, 
+    ["Hamburger"] = true, 
+    ["Food"] = true, 
+    ["Subway"] = true,
+    
+    -- Benda lain / Non-Weapon
+    ["KeyCard"] = true, 
+    ["BallNChainTool"] = true, 
+    ["Broom"] = true, 
+    ["BlindFold"] = true, 
+    ["Rope"] = true, 
+    ["Handcuffs (fugitive)"] = true, 
+    ["Flashlight"] = true, 
+    ["Board"] = true, 
+    ["Grab"] = true
+}
 
 -- ==========================================
--- PERBAIKAN AUTO ATTACK (CONTINUOUS LOOP)
+-- AUTO ATTACK (CONTINUOUS LOOP)
 -- ==========================================
 local IsAutoAttacking = false
 
+-- Catatan: Pastikan variabel 'MainTab' sudah didefinisikan di script GUI utama kamu
 local Toggle = MainTab:CreateToggle({
-   Name = "Auto Attack (Fixed)",
-   CurrentValue = false,
-   Flag = "Auto Attack",
-   Callback = function(value)
-       IsAutoAttacking = value
-       
-       if value then
-           -- Memulai thread looping saat toggle ON
-           task.spawn(function()
-               while IsAutoAttacking do
-                   pcall(function()
-                       if Plr.Character and Plr.Backpack then
-                           -- 1. Equip SEMUA tool yang ada di backpack
-                           for _, tool in pairs(Plr.Backpack:GetChildren()) do
-                               if tool:IsA("Tool") then
-                                   tool.Parent = Plr.Character
-                               end
-                           end
-                           
-                           -- 2. Auto click/attack SEMUA tool yang ada di character
-                           for _, tool in pairs(Plr.Character:GetChildren()) do
-                               if tool:IsA("Tool") then
-                                   tool:Activate()
-                               end
-                           end
-                       end
-                   end)
-                   
-                   task.wait(0.1) -- Delay kecil agar tidak membuat game lag/crash
-               end
-           end)
-       end
-       -- Jika value = false, loop akan otomatis berhenti karena kondisi "while IsAutoAttacking" menjadi false
-   end,
+    Name = "Auto Attack (Working)",
+    CurrentValue = false,
+    Flag = "Auto Attack",
+    Callback = function(value)
+        IsAutoAttacking = value
+        
+        if value then
+            -- Memulai thread looping saat toggle ON
+            task.spawn(function()
+                while IsAutoAttacking do
+                    pcall(function()
+                        if Plr.Character and Plr.Backpack then
+                            
+                            -- 1. Equip tool dari Backpack ke Character (Kecuali yang ada di IgnoredItems)
+                            for _, tool in pairs(Plr.Backpack:GetChildren()) do
+                                if tool:IsA("Tool") and not IgnoredItems[tool.Name] then
+                                    tool.Parent = Plr.Character
+                                end
+                            end
+                            
+                            -- 2. Auto click/attack SEMUA tool yang ada di Character (Kecuali yang ada di IgnoredItems)
+                            for _, tool in pairs(Plr.Character:GetChildren()) do
+                                if tool:IsA("Tool") and not IgnoredItems[tool.Name] then
+                                    tool:Activate()
+                                end
+                            end
+                            
+                        end
+                    end)
+                    
+                    task.wait(0.1) -- Delay kecil agar tidak membuat game lag/crash
+                end
+            end)
+        end
+        -- Jika value = false, loop akan otomatis berhenti karena kondisi "while IsAutoAttacking" menjadi false
+    end,
 })
+
+-- Button
+local Button = MainTab:CreateButton({
+    Name = "One Hit (Needs more weapons)",
+    Callback = function()
+        pcall(function()
+            if Plr.Character and Plr.Backpack then
+                
+                -- 1. Equip SEMUA tool dari Backpack ke Character (Kecuali yang ada di IgnoredItems)
+                for _, tool in pairs(Plr.Backpack:GetChildren()) do
+                    if tool:IsA("Tool") and not IgnoredItems[tool.Name] then
+                        tool.Parent = Plr.Character
+                    end
+                end
+                
+                -- 2. Auto attack SEMUA tool yang ada di Character 1x saja (Kecuali yang ada di IgnoredItems)
+                for _, tool in pairs(Plr.Character:GetChildren()) do
+                    if tool:IsA("Tool") and not IgnoredItems[tool.Name] then
+                        tool:Activate()
+                    end
+                end
+                
+            end
+        end)
+    end
+})
+
+
+-- Script Auto Attack
+local Plr = game:GetService("Players").LocalPlayer
+
+workspace.FallenPartsDestroyHeight = -50000
+
+-- Daftar item yang diabaikan (Bukan senjata / Tool pendukung)
+local IgnoredItems = {
+    -- Makanan & Minuman
+    ["Drink"] = true, 
+    ["Doughnut"] = true, 
+    ["Hamburger"] = true, 
+    ["Food"] = true, 
+    ["Subway"] = true,
+    
+    -- Benda lain / Non-Weapon
+    ["KeyCard"] = true, 
+    ["BallNChainTool"] = true, 
+    ["Broom"] = true, 
+    ["BlindFold"] = true, 
+    ["Rope"] = true, 
+    ["Handcuffs (fugitive)"] = true, 
+    ["Flashlight"] = true, 
+    ["Board"] = true, 
+    ["Grab"] = true
+}
 
 -- ==========================================
 -- PERBAIKAN AUTO HEAL (CONTINUOUS LOOP)
 -- ==========================================
-local FoodList = {"Drink", "Doughnut", "Hamburger", "Food", "Subway"}
+-- Script Auto Heal
+local Plr = game:GetService("Players").LocalPlayer
 
--- Fungsi aman untuk mengambil part makanan di workspace (mencegah error nil)
-local FoodParts = {
-    ["Drink"] = function() return workspace.Tools:FindFirstChild("Drink") and workspace.Tools.Drink:FindFirstChild("Handle") end,
-    ["Doughnut"] = function() return workspace.Tools:FindFirstChild("Doughnut") and workspace.Tools.Doughnut:FindFirstChild("Torus") end,
-    ["Hamburger"] = function() return workspace.Tools:FindFirstChild("Hamburger") and workspace.Tools.Hamburger:FindFirstChild("handle") end,
-    ["Food"] = function() return workspace.Tools:FindFirstChild("Food") and workspace.Tools.Food:FindFirstChild("Main") end,
-    ["Subway"] = function() 
-        local sub = workspace.Tools:FindFirstChild("Subway")
-        return sub and sub:FindFirstChild("Model") and sub.Model:FindFirstChild("BreadTop") 
-    end,
+-- Daftar makanan yang boleh digunakan untuk heal (Whitelist)
+local FoodList = {
+    "Drink", 
+    "Doughnut", 
+    "Hamburger", 
+    "Food", 
+    "Subway"
 }
 
+-- Konversi ke dictionary untuk pengecekan lebih cepat
+local AllowedFood = {}
+for _, foodName in ipairs(FoodList) do
+    AllowedFood[foodName] = true
+end
+
+-- ==========================================
+-- AUTO HEAL (CONTINUOUS LOOP)
+-- ==========================================
 local IsAutoHealing = false
 
 local Toggle = MainTab:CreateToggle({
-   Name = "Auto Heal (Fixed)",
-   CurrentValue = false,
-   Flag = "Auto heal",
-   Callback = function(value)
-       IsAutoHealing = value
-       
-       if value then
-           task.spawn(function()
-               while IsAutoHealing do
-                   pcall(function()
-                       local char = Plr.Character
-                       local hum = char and char:FindFirstChildOfClass("Humanoid")
-                       
-                       -- Cek jika darah <= 50 dan masih hidup
-                       if hum and hum.Health <= 50 and hum.Health > 0 then
-                           for _, foodName in ipairs(FoodList) do
-                               local toolInChar = char:FindFirstChild(foodName)
-                               local toolInBackpack = Plr.Backpack:FindFirstChild(foodName)
-                               
-                               if toolInChar then
-                                   -- Jika tool ada di karakter (sedang di-equip), fire event dan kembalikan ke backpack
-                                   local eatEvent = ReplicatedStorage:FindFirstChild("EatingEvent")
-                                   if eatEvent then
-                                       eatEvent:FireServer(char, toolInChar, "Heal")
-                                   end
-                                   toolInChar.Parent = Plr.Backpack
-                                   break -- Stop loop setelah menemukan dan menggunakan makanan
-                                   
-                               elseif toolInBackpack then
-                                   -- Jika tool ada di backpack, equip ke karakter
-                                   toolInBackpack.Parent = char
-                                   break -- Stop loop, tunggu iterasi berikutnya untuk fire event
-                                   
-                               else
-                                   -- Jika tidak ada di inventory, coba klik di workspace untuk mengambil
-                                   local partFunc = FoodParts[foodName]
-                                   if partFunc then
-                                       local part = partFunc()
-                                       if part then
-                                           FireClick(part)
-                                           break -- Stop loop setelah mencoba mengambil
-                                       end
-                                   end
-                               end
-                           end
-                       end
-                   end)
-                   
-                   task.wait(0.5) -- Delay agar tidak spam dan memberi waktu animasi makan
-               end
-           end)
-       end
-   end,
+    Name = "Auto Heal (Work with Some issue)",
+    CurrentValue = false,
+    Flag = "Auto Heal",
+    Callback = function(value)
+        IsAutoHealing = value
+        
+        if value then
+            task.spawn(function()
+                while IsAutoHealing do
+                    pcall(function()
+                        local char = Plr.Character
+                        local hum = char and char:FindFirstChildOfClass("Humanoid")
+                        
+                        if hum and hum.Health > 0 then
+                            
+                            -- Cek apakah darah masih belum full
+                            if hum.Health < hum.MaxHealth then
+                                
+                                -- 1. Cari makanan yang sedang di-equip di character
+                                local equippedFood = nil
+                                for _, tool in pairs(char:GetChildren()) do
+                                    if tool:IsA("Tool") and AllowedFood[tool.Name] then
+                                        equippedFood = tool
+                                        break
+                                    end
+                                end
+                                
+                                if equippedFood then
+                                    -- 2. Auto clicker: klik makanan berkali-kali sampai habis atau HP full
+                                    while IsAutoHealing 
+                                          and equippedFood.Parent == char 
+                                          and hum.Health < hum.MaxHealth 
+                                          and hum.Health > 0 do
+                                        
+                                        equippedFood:Activate()
+                                        task.wait(0.1) -- Klik cepat setiap 0.1 detik
+                                    end
+                                else
+                                    -- 3. Tidak ada makanan di character, cari di backpack dan equip 1 saja
+                                    for _, tool in pairs(Plr.Backpack:GetChildren()) do
+                                        if tool:IsA("Tool") and AllowedFood[tool.Name] then
+                                            tool.Parent = char
+                                            break -- Equip 1 makanan saja
+                                        end
+                                    end
+                                end
+                                
+                            else
+                                -- 4. Darah sudah full, auto unequip semua makanan dari character
+                                for _, tool in pairs(char:GetChildren()) do
+                                    if tool:IsA("Tool") and AllowedFood[tool.Name] then
+                                        tool.Parent = Plr.Backpack
+                                    end
+                                end
+                            end
+                            
+                        end
+                    end)
+                    
+                    task.wait(0.1) -- Delay kecil untuk responsif
+                end
+            end)
+        end
+    end,
 })
+
 
 local MainSection = MainTab:CreateSection("Main Script Buttom")
 
@@ -404,7 +388,7 @@ local Button = Buff:CreateButton({
 })
 
 local MainSection = Team:CreateSection("Choose Team")
-local Paragraph = Team:CreateParagraph({Title = "📢 INFORMATION", Content = "More Esp is Coming Soon"})
+local Paragraph = Team:CreateParagraph({Title = "🛡️ INFORMATION", Content = "We have Detected a bug in the Choose Team feature, it will be fixed in the next update"})
 local Dropdown = Team:CreateDropdown({
    Name = "Change Team",
    Options = {"Fugitive", "Prison", "Police", "Civilian (Client)", "ADMIN (Client)", "Hostage (Client)", "Choosing (Client)"},
@@ -1732,9 +1716,8 @@ local Button = Other:CreateButton({
 })
 
 local Button = Other:CreateButton({
-    Name = "God Mode",
+    Name = "God Mode (Not Working)",
     Callback = function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/zephyr10101/ignore-touchinterests/main/main",true))()
    end
 })
 
@@ -1774,11 +1757,11 @@ local Button = Other:CreateButton({
    end
 })
 
-local MainSection = Misc:CreateSection("Creator This script")
-local Paragraph = Misc:CreateParagraph({Title = "⚒️ USERNAME/NAME", Content = "- 3streakzx: Programmer\n- 4Streakzx: Builder\n- kamunanya3vx: Search Information\n- Therepositori: Tester Scripts\n- Zeutronxsite: Idea/Concept"})
+local MainSection = Misc:CreateSection("Information")
+local Paragraph = Misc:CreateParagraph({Title = "⚒️ CREATOR SCRIPT", Content = "- 3streakzx: Programmer\n- 4Streakzx: Builder\n- Therepositori & kamunanya3vx: Tester Scripts"})
 
 local Paragraph = Misc:CreateParagraph({Title = "🔍 LINK SCRIPTS & SUPPORT", Content = "- Pastebin.com/u/Ty4rds\n- https://github.com/ioerhub"})
 
-local Paragraph = Misc:CreateParagraph({Title = "🛡️ INFORMATION", Content = "- Latest Version: 2.3\n- Max Version: 4.0\n- Status: 🟡 Progress"})
+local Paragraph = Misc:CreateParagraph({Title = "🛡️ INFORMATION", Content = "- Latest Version: Latest Update\n- Max Version: 4.0\n- Status: 🟡 Progress"})
 
 local Paragraph = Misc:CreateParagraph({Title = "🌐 GROUP & TEAM", Content = "- @Zeutron Community\n- @Zyptrue Dev Community\n- @IOER State Community"})
