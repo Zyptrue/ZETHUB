@@ -1,7 +1,7 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "ZENHUB | TLK PRISON | V2.75",
+   Name = "ZENHUB | TLK PRISON | V2.8",
    LoadingTitle = "Loading......",
    LoadingSubtitle = "by Zeutronxsite",
    ShowText = "Zenhub", -- for mobile users to unhide Rayfield, change if you'd like
@@ -62,7 +62,7 @@ local Paragraph = Change:CreateParagraph({Title = "✅ VERSION 2.3", Content = "
 
 local Paragraph = Change:CreateParagraph({Title = "✅ VERSION 2.6", Content = "- [+] Remake Auto Attack\n- [+] Add One Hit\n- [!!] Fixed Auto Heal\n- [+] More Details & Information\n- [+] Add Theme\n- [+] Rename Tab"})
 
-local Paragraph = Change:CreateParagraph({Title = "✅ VERSION 2.75 (Latest Update)", Content = "- [+] Fixed Mobile Not Support For UI Walkspeed\n- [+] Add Infinite Yield In Checking\n- [+] Add Auto Drop Food [NEW]\n- [+] Add Admin/Dev Detection [NEW]"})
+local Paragraph = Change:CreateParagraph({Title = "✅ VERSION 2.8 (Latest Update)", Content = "- [+] Fixed Mobile Not Support For UI Walkspeed\n- [+] Add Infinite Yield In Checking\n- [+] Add Auto Drop Food [NEW]\n- [+] Add Admin/Dev Detection [NEW]\n- [!!] Fixed Auto Food & Admin Detection [NEW]"})
 
 
 local MainSection = MainTab:CreateSection("Main Script Toggle")
@@ -295,19 +295,45 @@ local Toggle = MainTab:CreateToggle({
 -- AUTO DROP FOOD (ZENHUB)
 -- ==========================================
 
+-- Daftar makanan yang akan di-drop (Whitelist)
+local FoodList = {
+    ["Subway"] = true,
+    ["Food"] = true,
+    ["Hamburger"] = true,
+    ["Doughnut"] = true,
+    ["Drink"] = true
+}
+
 -- Variabel untuk mengontrol status toggle
 local autoDropFoodActive = false
 
--- Toggle menggunakan AddToggle (syntax yang benar untuk OrionLib)
-local Toggle = MainTab:CreateToggle({
-   Name = "Auto Drop Food (Working)",
-   CurrentValue = false,
-   Flag = "AutoDropFood", 
-   Callback = function(Value)
-       -- Mengubah status variabel berdasarkan nilai toggle (true/false)
-       autoDropFoodActive = Value
-       print("ZENHUB: Auto Drop Food " .. (Value and "ON" or "OFF"))
-   end,
+-- Keybind untuk Auto Drop Food
+local Keybind = MainTab:CreateKeybind({
+    Name = "Auto Drop Food",
+    CurrentKeybind = "G",
+    HoldToInteract = false,
+    Flag = "AutoDropFood",
+    Callback = function()
+        -- Toggle status ON/OFF setiap kali keybind ditekan
+        autoDropFoodActive = not autoDropFoodActive
+        
+        -- Tampilkan notifikasi sesuai status
+        if autoDropFoodActive then
+            Rayfield:Notify({
+                Title = "📢 INFORMATION",
+                Content = "Auto Drop Food: ON",
+                Duration = 5,
+                Image = "check",
+            })
+        else
+            Rayfield:Notify({
+                Title = "📢 INFORMATION",
+                Content = "Auto Drop Food: OFF",
+                Duration = 5,
+                Image = "x",
+            })
+        end
+    end,
 })
 
 -- Script Auto Drop (berjalan di background menggunakan spawn agar GUI tidak freeze)
@@ -321,7 +347,7 @@ spawn(function()
             -- (Beberapa game mewajibkan tool berada di character dulu agar bisa di-drop)
             if lp.Backpack then
                 for _, item in pairs(lp.Backpack:GetChildren()) do 
-                    if item.Name == "Food" then 
+                    if item:IsA("Tool") and FoodList[item.Name] then 
                         item.Parent = lp.Character 
                     end 
                 end
@@ -332,7 +358,7 @@ spawn(function()
             -- Langkah 2: Jatuhkan makanan dari Character ke Workspace
             if lp.Character then
                 for _, item in pairs(lp.Character:GetChildren()) do 
-                    if item.Name == "Food" then 
+                    if item:IsA("Tool") and FoodList[item.Name] then 
                         item.Parent = workspace 
                     end 
                 end
@@ -427,14 +453,14 @@ end
 
 -- Fungsi untuk melakukan kick diri sendiri
 local function KickSelf(adminName)
-    OrionLib:MakeNotification({
-        Name = "⚠️ ADMIN DETECTED!",
-        Content = "Admin '" .. adminName .. "' terdeteksi! Kicking to avoid ban...",
-        Image = "rbxassetid://4483345998",
-        Time = 5
-    })
+    Rayfield:Notify({
+    Title = "⚠️ ADMIN DETECTED",
+    Content = "Admin '" .. adminName .. "' terdeteksi! Kicking to avoid ban...",
+    Duration = 6,
+    Image = "triangle-alert",
+})
     wait(2) -- Jeda 2 detik agar notifikasi sempat terbaca sebelum kick
-    game.Players.LocalPlayer:Kick("ZENHUB Anti-Ban: Admin (" .. adminName .. ") terdeteksi. Keluar untuk menghindari banned.")
+    game.Players.LocalPlayer:Kick("ZENHUB Anti-Ban: Admin (" .. adminName .. ") Detected. Exiting to avoid a ban!")
 end
 
 -- Fungsi untuk mengecek semua pemain yang sudah ada di server
