@@ -652,7 +652,13 @@ local function getTeamColor(player)
         ["Prison"]   = Color3.fromRGB(255, 150, 0),
         ["Police"]   = Color3.fromRGB(0, 100, 255),
         ["Civilian"] = Color3.fromRGB(50, 255, 50),
-        ["Hostage"]  = Color3.fromRGB(139, 0, 0),
+        
+        -- === TEAM TAMBAHAN & DIUBAH WARNA NYA ===
+        ["Hostage"]  = Color3.fromRGB(255, 0, 255),
+        ["Choosing"] = Color3.fromRGB(0, 255, 255),
+        ["ADMIN"]    = Color3.fromRGB(255, 215, 0),
+
+        -- === Color Picker Team ===
         ["Red"]      = Color3.fromRGB(255, 50, 50),
         ["Blue"]     = Color3.fromRGB(50, 100, 255),
         ["Green"]    = Color3.fromRGB(50, 255, 50),
